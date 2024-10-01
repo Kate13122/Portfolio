@@ -1,0 +1,119 @@
+   
+/*SHOWCASE*/
+
+
+ CREATE TABLE Restaurants (
+    RestaurantID INT PRIMARY KEY IDENTITY(1,1),  -- Primary key with auto-increment
+    RestaurantName NVARCHAR(100) NOT NULL,       -- Name of the restaurant
+    RestaurantRank INT,                          -- Rank of the restaurant
+    RestaurantDescription NVARCHAR(255),         -- Description of the restaurant
+    TypeOfRestaurant NVARCHAR(50)				-- Type of the restaurant (e.g., Vegan, Fast Food)
+	)    
+	
+--2) insert  and union data from both table to have them in one table
+
+INSERT INTO Restaurants ([RestaurantName], [RestaurantRank], [RestaurantDescription])
+SELECT
+    [RestaurantName] AS 'Restaurant Name', 
+    [RestaurantRank] AS 'Restaurant Rank',
+    [Restaurant Description] AS 'Restaurant Description'
+FROM [SQL - Core].dbo.[restaurant_list]
+UNION
+SELECT 
+    [Restaurant Name],  
+    [Rank] AS 'Restaurant Rank', 
+    [Restaurant Description] AS 'Restaurant Description'
+FROM [SQL - Intermediate].dbo.[Restaurant - Master (Cleansed) - Revenue];
+
+-- 3) update table with missing information in column 'TypeOfRestaurant'
+
+UPDATE [Restaurants]
+SET [TypeOfRestaurant]=
+Case
+
+When [RestaurantName] like '%Bistro%' or [RestaurantName] like '%Vegan%'  then  'Vegan' 
+when ([RestaurantName] like '%Bar%') and [RestaurantName] not like '%Sushi%' then 'Fine Dining'
+when [RestaurantName] like '%Steakhouse%' then 'Steakhouse'
+when [RestaurantName] like '%Steakhouse%'  or [RestaurantName] like '%Grill%' or [RestaurantName] like '%BBQ%' or [RestaurantName] like '%Spice%' then 'Steakhouse'
+when ([RestaurantName] like '%house%' or [RestaurantName] like '%Sandwich%' or [RestaurantName] like  '%Taco%')
+and	[RestaurantName] not like '%Pasta%' then 'Fast food'
+when [RestaurantName] like '%Pasta%'or [RestaurantName] like '%Pizzeria%' or [RestaurantName] like '%Italian%' then 'Pizzeria'
+when [RestaurantName] like '%Breakfast%'or [RestaurantName] like '%Bakery%' or [RestaurantName] like '%Pancake%' then 'Bistro'
+when [RestaurantName] like '%Diner%' then 'Diner'
+when [RestaurantName] like '%Sea%'or RestaurantName like '%Fish%' then 'Seafood'
+when [RestaurantName] like '%Sushi%'or RestaurantName like '%Fish%' then 'Sushi Bar'
+when [RestaurantName] like '%Tandoori%'or RestaurantName like '%Fusion%' then 'Ethnic Restaurant'
+when [TypeOfRestaurant] is null  then 'Other'
+else null
+end;
+
+/*4) add EmployerID to table*/
+
+/*Alter Table Restaurants
+add EmployerID VARCHAR (100)*/
+
+Update [Restaurants]
+set EmployerID =
+case
+when RestaurantID between 1 and 8 then 12345
+when RestaurantID between 9 and 16 then 12346
+when RestaurantID between 17 and 24 then 12347
+when RestaurantID between 25 and 32 then 12348
+when RestaurantID between 33 and 40 then 12349
+when RestaurantID between 41 and 48  then 12350
+when RestaurantID between 49 and 56 then 12348
+else null
+end;
+
+
+/*calculation of average */
+
+Alter table [Restaurants]
+add Average VARCHAR (100)
+
+/*calculation of Average of Revenue*/
+
+Update [Restaurants]
+set Average = CAST((Revenue2021 + Revenue2022 + Revenue2023) / 3 as decimal (12,2))
+
+/*preparation for the join based on EmployerID assign Restaurant Owner*/
+
+/*Alter table Restaurants
+add OwnerName VARCHAR (100)*/
+
+
+Update Restaurants
+set Restaurants.OwnerName = OwnersOfRestaurant.OwnerofRestaurant
+from OwnersOfRestaurant
+Left Join Restaurants
+on OwnersOfRestaurant.EmployerID = Restaurants.EmployerID
+
+--constraint only positive value can be in Rank
+
+/*Alter table Restaurants
+add constraint check_rank_positive_values
+check (RestaurantRank > 0)*/
+
+
+/*CREATE VIEW TopRankedRestaurants AS
+SELECT 
+    TOP 10 
+    RestaurantName, 
+    RestaurantRank, 
+    TypeOfRestaurant
+FROM 
+    Restaurants
+ORDER BY 
+    RestaurantRank ASC;*/
+
+
+
+
+
+
+
+
+
+
+
+
